@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="dev.lcdclock"
+    android:versionCode="1"
+    android:versionName="1.0">
+
+    <uses-sdk android:minSdkVersion="33" android:targetSdkVersion="36" />
+
+    <!-- Kept for keeping external display awake while charging -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- Kept for tactile haptic feedback on double-tap style switching -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- Kept for system boot completion -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <application
+        android:label="@string/app_name"
+        android:icon="@drawable/ic_launcher"
+        android:allowBackup="false"
+        android:enableOnBackInvokedCallback="true">
+
+        <!-- Motorola allowlist for the small cover screen; without it display 1 is invisible to the app. -->
+        <meta-data
+            android:name="com.motorola.allow_activities_on_small_external_display"
+            android:value="true" />
+
+        <activity
+            android:name=".PreviewActivity"
+            android:exported="true"
+            android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
+        </activity>
+
+        <!-- The home screen clock widgets: the face, and the time alone. -->
+        <receiver
+            android:name=".ClockWidget"
+            android:exported="true"
+            android:label="@string/widget_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/clock_widget" />
+        </receiver>
+        <receiver
+            android:name=".TimeWidget"
+            android:exported="true"
+            android:label="@string/time_widget_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/time_widget" />
+        </receiver>
+
+        <receiver
+            android:name=".RescheduleReceiver"
+            android:exported="false"
+            android:directBootAware="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Motorola clock face plugin: discovery, session and options (see MotoClockFace). -->
+        <service
+            android:name=".LcdClockService"
+            android:permission="com.motorola.permission.BIND_CLOCK_FACE_SERVICE"
+            android:exported="true"
+            android:directBootAware="true">
+            <intent-filter>
+                <action android:name="com.motorola.service.action.CLOCK_FACE_SERVICE" />
+            </intent-filter>
+            <meta-data
+                android:name="com.motorola.clockface_service"
+                android:resource="@xml/clock_face_service" />
+        </service>
+
+        <service
+            android:name=".LcdSessionService"
+            android:permission="com.motorola.permission.BIND_CLOCK_FACE_SERVICE"
+            android:exported="true"
+            android:directBootAware="true">
+            <intent-filter>
+                <action android:name="com.motorola.service.action.CLOCK_FACE_SESSION_SERVICE" />
+            </intent-filter>
+        </service>
+
+        <provider
+            android:name=".LcdOptionsProvider"
+            android:authorities="dev.lcdclock.clockface-options"
+            android:readPermission="com.motorola.permission.READ_CLOCK_FACE_OPTIONS"
+            android:exported="true"
+            android:directBootAware="true">
+            <intent-filter>
+                <action android:name="com.motorola.clockface.action.CLOCK_FACE_OPTIONS" />
+            </intent-filter>
+        </provider>
+    </application>
+</manifest>
